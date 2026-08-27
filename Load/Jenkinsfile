@@ -1,0 +1,36 @@
+#!/usr/bin/env groovy
+// Shared library reference
+@Library('uk-content-jenkins-shared-library') _
+
+pipeline {
+  agent {
+      label sharedLibrary.agents().jmeter.label
+  }
+  options {
+      skipDefaultCheckout true      // Don't checkout automatically
+  }
+  stages {
+    stage('Run tests') {
+      steps {
+        container(sharedLibrary.agents().jmeter.container) {
+          checkout scm
+          script {
+            sharedLibrary.updateBuildDetails("${env.ENVIRONMENT_NAME}-load-test-${env.BUILD_NUMBER}")
+            dir('Tests/Load') {
+              sh "jmeter -Jjmeter.save.saveservice.url=true -n -t loadTest.jmx -JTest_Url=${env.TEST_HOSTNAME} -l jmeter_results.jtl"
+              perfReport errorFailedThreshold: 10.00, sourceDataFiles:'loadTestAggregate.csv'
+            }
+          }
+        }
+      }
+      post {
+        always {
+          echo 'Clean Up'
+          script {
+            cleanWs()
+          }
+        }
+      }
+    }
+  }
+}
