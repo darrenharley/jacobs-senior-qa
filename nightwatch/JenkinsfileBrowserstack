@@ -1,0 +1,49 @@
+#!/usr/bin/env groovy
+// Shared library reference
+@Library('uk-content-jenkins-shared-library') _
+
+config_file_flag = env.CONFIG_FILE ? " -c ${env.CONFIG_FILE}" : ""
+environment_flag = env.ENVIRONMENT_FLAG ? " -e ${env.ENVIRONMENT_FLAG}" : ""
+group_flag = env.GROUP_FLAG ? " --group ${env.GROUP_FLAG}" : ""
+tag_flag = env.TAG_FLAG ? " --tag ${env.TAG_FLAG}" : ""
+
+pipeline {
+  agent {
+    label sharedLibrary.agents().node22_lts.label
+  }
+  stages {
+    stage('Install npm packages') {
+      steps {
+        container(sharedLibrary.agents().node22_lts.container) {
+          script {
+            sharedLibrary.updateBuildDetails("${env.ENVIRONMENT_NAME}-tests-${env.BUILD_NUMBER}")
+            dir('Tests') {
+              sh 'npm install'
+            }
+          }
+        }
+      }
+    }
+    stage('Testing') {
+      steps {
+        container(sharedLibrary.agents().node22_lts.container) {
+          withCredentials([usernamePassword(credentialsId: 'browserstack_account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            withCredentials([usernamePassword(credentialsId: 'parkers_valuation_test_account', usernameVariable: 'VALUATION_USERNAME', passwordVariable: 'VALUATION_PASSWORD')]) {
+              script {
+                dir('Tests') {
+                  sh "export BROWSERSTACK_ACCESS_USER=${USERNAME}\
+                      && export BROWSERSTACK_ACCESS_KEY=${PASSWORD}\
+                      && export JENKINS_BUILD_ID=${env.ENVIRONMENT_NAME}-${env.BUILD_ID}\
+                      && export LAUNCH_URL=${env.LAUNCH_URL}\
+                      && export VALUATION_LOGIN_EMAIL=${VALUATION_USERNAME}\
+                      && export VALUATION_LOGIN_PASSWORD=${VALUATION_PASSWORD}\
+                      && npx nightwatch ${config_file_flag} ${environment_flag} ${group_flag} ${tag_flag}"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

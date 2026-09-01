@@ -16,16 +16,11 @@ const userPassword = faker.internet.password();
 const vrmTestCarRegCaps = 'YN63LHH';
 const vrmTestCarReg = 'yn63lhh';
 const incorrectCarReg = 'y63nlhh';
-// Zen Reviews
-const zenReviewSearchExample = 'https://zen.auto/search-personal-leasing/budget?status=special';
-const zenReviewsConfigExample = 'https://zen.auto/configure?id=2079211&calculationParameters=duration%3D36%2Cyearly_mileage%3D8000%2Cinitial_payment%3D1500'
 // Strip Payment
 const stripeTestUrl = 'volvo/v60/coupe-2010/d3-(136bhp)-se-lux-(0613-)-5d/103/select-a-valuation/';
 const stripeTestCardNumberSucceeds = '4242424242424242';
 const stripeTestCardNumberRequiresAuth = '4000002500003155';
 const stripeTestCardNumberDeclines = '4000000000009995';
-const staticBauerCdnAdsTxtLocation = 'http://static.bauercdn.com/ads.txt';
-const stagingStaticBauerCdnAdsTxtLocation = 'http://static.stg.bauercdn.com/ads.txt';
 // setting up random solr pages
 var publishDateRegex = '[2024-06-01T00:00:00Z TO 2024-12-31T23:59:59Z]';
 let solrModelPage;
